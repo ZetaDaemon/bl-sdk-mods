@@ -2,7 +2,7 @@
 - [`clone_bal`](#clone_bal)
 
 ## `clone_bal`
-usage: `clone [-h] [-x] base clone`
+usage: `clone_bal [-h] [-x] [-b] base clone`
 
 Creates a clone of an existing balance as well as the part lists, manually dump the new balance to check the name of the part lists.
 
