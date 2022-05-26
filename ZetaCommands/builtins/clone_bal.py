@@ -23,21 +23,21 @@ def handler(args: argparse.Namespace) -> None:
 	cloned = clone_object(src, outer, name)
 
 	if is_obj_instance(src, "WeaponBalanceDefinition"):
-		cloned_WeaponPartListCollection = clone_object(src.WeaponPartListCollection, src, name+PLC)
-		cloned_RuntimePartListCollection = clone_object(src.RuntimePartListCollection, src, name+RPLC)
+		cloned_WeaponPartListCollection = clone_object(src.WeaponPartListCollection, cloned, "")
+		cloned_RuntimePartListCollection = clone_object(src.RuntimePartListCollection, cloned, "")
 
 		cloned.WeaponPartListCollection = cloned_WeaponPartListCollection
 		cloned.RuntimePartListCollection = cloned_RuntimePartListCollection
 
 	elif is_obj_instance(src, "ClassModBalanceDefinition"):
-		cloned_ItemPartListCollection = clone_object(src.ItemPartListCollection, src, name+PLC)
-		cloned_RuntimePartListCollection = clone_object(src.RuntimePartListCollection, src, name+IPLC)
+		cloned_ItemPartListCollection = clone_object(src.ItemPartListCollection, cloned, "")
+		cloned_RuntimePartListCollection = clone_object(src.RuntimePartListCollection, cloned, "")
 
 		cloned.ItemPartListCollection = cloned_ItemPartListCollection
 		cloned.RuntimePartListCollection = cloned_RuntimePartListCollection
 
 	elif not src.PartListCollection is None:
-		cloned_ItemPartListCollectionDefinition = clone_object(src.PartListCollection, src, name+IPLC)
+		cloned_ItemPartListCollectionDefinition = clone_object(src.PartListCollection, cloned, "")
 		cloned.PartListCollection = cloned_ItemPartListCollectionDefinition
 
 	if not args.use_base:
