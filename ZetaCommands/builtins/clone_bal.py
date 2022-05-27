@@ -20,6 +20,8 @@ def handler(args: argparse.Namespace) -> None:
 		return
 
 	outer, name = parse_clone_target(args.clone, src.Class.Name, args.suppress_exists)
+	if name is None:
+		return
 	cloned = clone_object(src, outer, name)
 
 	if is_obj_instance(src, "WeaponBalanceDefinition"):
