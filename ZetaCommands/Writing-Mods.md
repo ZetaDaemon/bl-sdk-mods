@@ -19,11 +19,11 @@ Creates a clone of an existing balance as well as the part lists, manually dump 
 | `-b, --use-base` | Use the original object as the base definition of the new balance rather than keeping the same base definition as the original balance |
 
 ## `clone_bpd_skill`
-usage: `clone_bal [-h] [-x] [-b] base clone skill`
+usage: `clone_bpd_skill [-h] [-x] [-b] base clone skill`
 
 Creates a clone of a BehaviourProvidierDefinition, as well as recursively cloning some of the
 objects making it up. This may not match the exact layout of the original objects, dump them
-manually to check what their new names are. Uses a base name for skills to more neatly handle the names for the skills created, for example if you use `GD_Weap_SMG.Skills.Skill_NewSkill` for the skill argument, the created skills will look like `GD_Weap_SMG.Skills.Skill_NewSkill_0`, `GD_Weap_SMG.Skills.Skill_NewSkill_1` ect. 
+manually to check what their new names are. Uses a base name for skills to more neatly handle the names for the skills created, for example if you use `GD_Weap_SMG.Skills.Skill_NewSkill` for the skill argument, the created skills will look like `GD_Weap_SMG.Skills.Skill_NewSkill_0`, `GD_Weap_SMG.Skills.Skill_NewSkill_1` ect.
 
 | positional arguments | |
 |:---|:---|
