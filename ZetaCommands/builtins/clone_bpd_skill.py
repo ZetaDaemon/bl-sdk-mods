@@ -14,12 +14,13 @@ stored in two different locations)
 ClonesDict = Dict[unrealsdk.UObject, unrealsdk.UObject]
 
 suppress_exists = False;
-skill_idx = 0
+skill_idx = -1
 
 # There are a bunch of different fields skills can be stored in, hence the field arg
 def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: ClonesDict, skill_name_base: str) -> None:
     global suppress_exists
     global skill_idx
+    unrealsdk.Log(f"Looking at: {behavior}, Field {field}")
     skill = getattr(behavior, field)
 
     skill_outer, skill_name = parse_clone_target(skill_name_base, skill.Class.Name, suppress_exists)
@@ -30,10 +31,15 @@ def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: Clo
         setattr(behavior, field, known_clones[skill])
         return
 
+    full_name = skill_name if skill_idx < 0 else f"{skill_name}_{skill_idx}"
+
+    unrealsdk.Log(f"cloning: {skill}")
+    unrealsdk.Log(f"outer: {skill_outer}")
+    unrealsdk.Log(f"name: {full_name}")
     cloned_skill = clone_object(
         skill,
         skill_outer,
-        skill_name + '_' + str(skill_idx)
+        full_name
     )
     skill_idx = skill_idx + 1
     if cloned_skill is None:
@@ -109,35 +115,42 @@ extra_behaviour_fixups: Dict[str, Callable[[unrealsdk.UObject, ClonesDict], str]
     "Behavior_AttributeEffect": functools.partial(fixup_AE_field, "AttributeEffect"),
     "Behavior_ActivateSkill": functools.partial(fixup_skill_field, "SkillToActivate"),
     "Behavior_DeactivateSkill": functools.partial(fixup_skill_field, "SkillToDeactivate"),
+    "Behavior_ActivateListenerSkill": functools.partial(fixup_skill_field, "SkillToActivate")
 }
 
 
 def fixup_bpd(cloned: unrealsdk.UObject, known_clones: ClonesDict, skill_name_base: str) -> None:
-    for sequence in cloned.BehaviorSequences:
-        # There are a bunch of other fields, but this seems to be the only used one
-        for data in sequence.BehaviorData2:
-            behavior = data.Behavior
-            if behavior is None:
-                continue
+    try:
+        for sequence in cloned.BehaviorSequences:
+            # There are a bunch of other fields, but this seems to be the only used one
+            try:
+                for data in sequence.BehaviorData2:
+                    behavior = data.Behavior
+                    if behavior is None:
+                        continue
 
-            if behavior in known_clones:
-                data.Behavior = known_clones[behavior]
-                continue
+                    if behavior in known_clones:
+                        data.Behavior = known_clones[behavior]
+                        continue
 
-            cloned_behavior = clone_object(
-                behavior,
-                cloned,
-                "" if behavior.Name == behavior.Class.Name else behavior.Name
-            )
-            if cloned_behavior is None:
-                continue
-            known_clones[behavior] = cloned_behavior
+                    cloned_behavior = clone_object(
+                        behavior,
+                        cloned,
+                        "" if behavior.Name == behavior.Class.Name else behavior.Name
+                    )
+                    if cloned_behavior is None:
+                        continue
+                    known_clones[behavior] = cloned_behavior
 
-            data.Behavior = cloned_behavior
+                    data.Behavior = cloned_behavior
 
-            for cls, fixup in extra_behaviour_fixups.items():
-                if is_obj_instance(cloned_behavior, cls):
-                    fixup(cloned_behavior, known_clones, skill_name_base)
+                    for cls, fixup in extra_behaviour_fixups.items():
+                        if is_obj_instance(cloned_behavior, cls):
+                            fixup(cloned_behavior, known_clones, skill_name_base)
+            except:
+                unrealsdk.Log(f"clone_bpd_skill: Error on line 120")
+    except:
+        unrealsdk.Log(f"clone_bpd_skill: Error on line 117")
 
 
 def handler(args: argparse.Namespace) -> None:
