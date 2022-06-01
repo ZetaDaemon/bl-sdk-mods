@@ -23,7 +23,9 @@ usage: `clone_bpd_skill [-h] [-x] base clone skill`
 
 Creates a clone of a BehaviourProvidierDefinition, as well as recursively cloning some of the
 objects making it up. This may not match the exact layout of the original objects, dump them
-manually to check what their new names are. Uses a base name for skills to more neatly handle the names for the skills created, for example if you use `GD_Weap_SMG.Skills.Skill_NewSkill` for the skill argument, the created skills will look like `GD_Weap_SMG.Skills.Skill_NewSkill_0`, `GD_Weap_SMG.Skills.Skill_NewSkill_1` ect.
+manually to check what their new names are. Uses a base name for skills to more neatly handle the names for the skills created, for example if you use `GD_Weap_SMG.Skills.Skill_NewSkill` for the skill argument, the created skills will look like `GD_Weap_SMG.Skills.Skill_NewSkill`, `GD_Weap_SMG.Skills.Skill_NewSkill_0` ect.
+
+Also, this command is just a reworked version of `clone_bpd` in command extentions so credit to apple for doing that, I've just added the extra skill naming logic.
 
 | positional arguments | |
 |:---|:---|
