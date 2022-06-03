@@ -14,7 +14,7 @@ Creates a clone of an existing balance as well as the part lists, manually dump 
 
 | optional arguments | |
 |:---|:---|
-| `-h, --help` | show this help message and exit |
+| `-h, --help` | Show this help message and exit |
 | `-x, --suppress-exists` | Suppress the error message when an object already exists. |
 | `-b, --use-base` | Use the original object as the base definition of the new balance rather than keeping the same base definition as the original balance |
 
@@ -35,5 +35,21 @@ Also, this command is just a reworked version of `clone_bpd` in command extentio
 
 | optional arguments | |
 |:---|:---|
-| `-h, --help` | show this help message and exit |
+| `-h, --help` | Show this help message and exit |
 | `-x, --suppress-exists` | Suppress the error message when an object already exists. |
+
+## `clone_attr`
+usage: `clone_bal [-h] [-x] [-d] base clone`
+
+Clones an attribute as well as the resolver chains, manually dump the new attribute to check the name of the resolver chains.
+
+| positional arguments | |
+|:---|:---|
+| `base`  | The object to create a copy of. |
+| `clone` | The name of the clone to create. |
+
+| optional arguments | |
+|:---|:---|
+| `-h, --help` | Show this help message and exit |
+| `-x, --suppress-exists` | Suppress the error message when an object already exists. |
+| `-d, --use-base` | Uses the ObjectArchetype of the base objects to create the clones rather than the base objects themselves |
