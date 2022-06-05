@@ -17,33 +17,29 @@ suppress_exists = False;
 skill_idx = -1
 
 # There are a bunch of different fields skills can be stored in, hence the field arg
-def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: ClonesDict, skill_name_base: str) -> None:
+def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: ClonesDict, clone_skill_base: list) -> None:
     global suppress_exists
     global skill_idx
-    unrealsdk.Log(f"Looking at: {behavior}, Field {field}")
     skill = getattr(behavior, field)
-
-    skill_outer, skill_name = parse_clone_target(skill_name_base, skill.Class.Name, suppress_exists)
     if skill is None:
         return
-
     if skill in known_clones:
         setattr(behavior, field, known_clones[skill])
         return
+    full_name = clone_skill_base[1] if skill_idx < 0 else f"{clone_skill_base[1]}_{skill_idx}"
 
-    full_name = skill_name if skill_idx < 0 else f"{skill_name}_{skill_idx}"
-
-    unrealsdk.Log(f"cloning: {skill}")
-    unrealsdk.Log(f"outer: {skill_outer}")
-    unrealsdk.Log(f"name: {full_name}")
+    unrealsdk.Log(f"Cloning new skill")
+    unrealsdk.Log(f"Base: {skill}")
+    unrealsdk.Log(f"Outer: {clone_skill_base[0]}")
+    unrealsdk.Log(f"Name: {full_name}")
     cloned_skill = clone_object(
         skill,
-        skill_outer,
+        clone_skill_base[0],
         full_name
     )
-    skill_idx = skill_idx + 1
     if cloned_skill is None:
         return
+    skill_idx = skill_idx + 1
     known_clones[skill] = cloned_skill
 
     setattr(behavior, field, cloned_skill)
@@ -66,9 +62,9 @@ def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: Clo
     known_clones[bpd] = cloned_bpd
 
     cloned_skill.BehaviorProviderDefinition = cloned_bpd
-    fixup_bpd(cloned_bpd, known_clones, skill_name_base)
+    fixup_bpd(cloned_bpd, known_clones, clone_skill_base)
 
-def fixup_AE_field(field: str, behavior: unrealsdk.UObject, known_clones: ClonesDict, skill_name_base: str) -> None:
+def fixup_AE_field(field: str, behavior: unrealsdk.UObject, known_clones: ClonesDict, clone_skill_base: list) -> None:
     skill = getattr(behavior, field)
     if skill is None:
         return
@@ -107,7 +103,7 @@ def fixup_AE_field(field: str, behavior: unrealsdk.UObject, known_clones: Clones
     known_clones[bpd] = cloned_bpd
 
     cloned_skill.BehaviorProviderDefinition = cloned_bpd
-    fixup_bpd(cloned_bpd, known_clones, skill_name_base)
+    fixup_bpd(cloned_bpd, known_clones, clone_skill_base)
 
 
 # Mapping behavior class names to functions that perform extra fixup on them
@@ -119,7 +115,7 @@ extra_behaviour_fixups: Dict[str, Callable[[unrealsdk.UObject, ClonesDict], str]
 }
 
 
-def fixup_bpd(cloned: unrealsdk.UObject, known_clones: ClonesDict, skill_name_base: str) -> None:
+def fixup_bpd(cloned: unrealsdk.UObject, known_clones: ClonesDict, clone_skill_base: list) -> None:
     try:
         for sequence in cloned.BehaviorSequences:
             # There are a bunch of other fields, but this seems to be the only used one
@@ -146,7 +142,7 @@ def fixup_bpd(cloned: unrealsdk.UObject, known_clones: ClonesDict, skill_name_ba
 
                     for cls, fixup in extra_behaviour_fixups.items():
                         if is_obj_instance(cloned_behavior, cls):
-                            fixup(cloned_behavior, known_clones, skill_name_base)
+                            fixup(cloned_behavior, known_clones, clone_skill_base)
             except:
                 unrealsdk.Log(f"clone_bpd_skill: Error on line 120")
     except:
@@ -155,6 +151,8 @@ def fixup_bpd(cloned: unrealsdk.UObject, known_clones: ClonesDict, skill_name_ba
 
 def handler(args: argparse.Namespace) -> None:
     global suppress_exists
+    global skill_idx
+    skill_idx = -1
     suppress_exists = args.suppress_exists
     src = parse_object(args.base)
     if src is None:
@@ -170,7 +168,10 @@ def handler(args: argparse.Namespace) -> None:
     cloned = clone_object(src, outer, name)
     if cloned is None:
         return
-    fixup_bpd(cloned, {}, args.skill)
+
+    #clone_skill_base = ["", ""]
+    clone_skill_base = parse_clone_target(args.skill, "SkillDefinition", suppress_exists)
+    fixup_bpd(cloned, {}, clone_skill_base)
 
 
 parser = RegisterConsoleCommand(
