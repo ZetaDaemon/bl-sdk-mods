@@ -28,10 +28,10 @@ def fixup_skill_field(field: str, behavior: unrealsdk.UObject, known_clones: Clo
         return
     full_name = clone_skill_base[1] if skill_idx < 0 else f"{clone_skill_base[1]}_{skill_idx}"
 
-    unrealsdk.Log(f"Cloning new skill")
-    unrealsdk.Log(f"Base: {skill}")
-    unrealsdk.Log(f"Outer: {clone_skill_base[0]}")
-    unrealsdk.Log(f"Name: {full_name}")
+    #unrealsdk.Log(f"Cloning new skill")
+    #unrealsdk.Log(f"Base: {skill}")
+    #unrealsdk.Log(f"Outer: {clone_skill_base[0]}")
+    #unrealsdk.Log(f"Name: {full_name}")
     cloned_skill = clone_object(
         skill,
         clone_skill_base[0],
