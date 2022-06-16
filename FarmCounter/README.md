@@ -1,7 +1,5 @@
 # Farm Counter
-A simple farm counter to keep track of how many times you have run a certain farm.
-
-The name of the farm can be set in game with changing the text handled in mod settings.
+A simple farm counter to keep track of how many times you have run a certain farm. The settings for Farm Counter can all be configured in the mod settings menu.
 
 You will need to download [User Feedback](https://bl-sdk.github.io/mods/UserFeedback/) for this to work
 
