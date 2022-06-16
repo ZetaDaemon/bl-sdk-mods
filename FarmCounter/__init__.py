@@ -16,7 +16,12 @@ class FarmCounter(SDKMod):
     FarmName: str = ""
     x: int = 50
     y: int = 50
-    alpha: int = 255
+    TextColour: tuple = (
+        0,
+        0,
+        0,
+        255
+    )
     FarmNameInput = TextInputBox("Farm Name", "Enter farm name: ")
     MessageText: str = (
         "Farming: {}\n"
@@ -30,21 +35,16 @@ class FarmCounter(SDKMod):
 
     def __init__(self) -> None:
         self.Options = []
-        RedSlider: Options.Slider
-        BlueSlider: Options.Slider
-        GreenSlider: Options.Slider
-        SizeSlider: Options.Slider
-        TextColour: Options.Nested
-        RedSlider = Options.Slider (
+        self.RedSlider = Options.Slider (
             Caption="Red",
             Description="Red value for the text colour.",
-            StartingValue=50,
+            StartingValue=255,
             MinValue=0,
             MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        GreenSlider = Options.Slider (
+        self.GreenSlider = Options.Slider (
             Caption="Green",
             Description="Green value for the text colour.",
             StartingValue=50,
@@ -53,16 +53,22 @@ class FarmCounter(SDKMod):
             Increment=1,
             IsHidden=False
         )
-        BlueSlider = Options.Slider (
+        self.BlueSlider = Options.Slider (
             Caption="Blue",
             Description="Blue value for the text colour.",
-            StartingValue=50,
+            StartingValue=165,
             MinValue=0,
             MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        SizeSlider = Options.Slider (
+        self.TextColour = Options.Nested (
+            Caption = "Text Colour",
+            Description = "Text colour for the farm counter.",
+            Children = [RedSlider, GreenSlider, BlueSlider],
+            IsHidden = False
+        )
+        self.SizeSlider = Options.Slider (
             Caption="Font Size",
             Description="Font scaling as a percentage.",
             StartingValue=100,
@@ -71,14 +77,41 @@ class FarmCounter(SDKMod):
             Increment=1,
             IsHidden=False
         )
-        TextColour = Options.Nested (
-            Caption = "Text Colour",
-            Description = "Text colour for the farm counter.",
-            Children = [RedSlider, GreenSlider, BlueSlider],
+        self.xPosSlider = Options.Slider (
+            Caption="X Position",
+            Description="X position for the text.",
+            StartingValue=50,
+            MinValue=0,
+            MaxValue=UCanvas.SizeX,
+            Increment=1,
+            IsHidden=False
+        )
+        self.yPosSlider = Options.Slider (
+            Caption="Y Position",
+            Description="Y position for the text.",
+            StartingValue=50,
+            MinValue=0,
+            MaxValue=UCanvas.SizeY,
+            Increment=1,
+            IsHidden=False
+        )
+        self.TextPos = Options.Nested (
+            Caption = "Text Position",
+            Description = "Text position for the farm counter.",
+            Children = [xPosSlider, yPosSlider],
             IsHidden = False
         )
-        self.Options.append(TextColour)
-        self.Options.append(SizeSlider)
+        self.Options = [
+            TextColour,
+            SizeSlider,
+            TextPos
+        ]
+
+    def ModOptionChanged(self, option: ModMenu.Options.Base, new_value) -> None:
+        if option == self.xPosSlider:
+            self.x = new_value
+        if option == self.yPosSlider:
+            self.y = new_value
 
     def DrawText(self, canvas, text, x, y, color, scalex, scaley) -> None:
         canvas.Font = unrealsdk.FindObject("Font", "ui_fonts.font_willowbody_18pt")
@@ -94,7 +127,7 @@ class FarmCounter(SDKMod):
                 return True
 
             canvas = params.Canvas
-            self.DrawText(canvas, self.MessageText.format(self.FarmName, self.FarmName), self.x, self.y, (0, 165, 255, self.alpha), 1, 1)
+            self.DrawText(canvas, self.MessageText.format(self.FarmName, self.FarmName), self.x, self.y, self.TextColour, 1, 1)
         elif not self.Farming: 
             self.Farming = False
         return True
@@ -102,8 +135,9 @@ class FarmCounter(SDKMod):
     def GameInputPressed(self, input):
         if input.Name == "Toggle Farming":
             self.Farming = not self.Farming
-            self.displayFeedback()
+            #self.displayFeedback()
         if input.Name == "Get Farm Name":
+            pass
 
     def Enable(self):
 
