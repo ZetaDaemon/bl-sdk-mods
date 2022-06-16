@@ -16,6 +16,7 @@ class FarmCounter(SDKMod):
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
     Farming: bool = False
+    isFarming: bool = False
     RunCount: int = 0
     FarmName: str = ""
     MessageText = """Farming: {}
@@ -71,55 +72,55 @@ Run: {}"""
             IsHidden = False
         )
 
-        self.GlowRedSlider = Options.Slider (
+        self.BackgroundRedSlider = Options.Slider (
             Caption="Red",
-            Description="Red value for the glow colour.",
+            Description="Red value for the Background colour.",
             StartingValue=0,
             MinValue=0,
-            MaxValue=100,
+            MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        self.GlowGreenSlider = Options.Slider (
+        self.BackgroundGreenSlider = Options.Slider (
             Caption="Green",
-            Description="Green value for the glow colour.",
+            Description="Green value for the Background colour.",
             StartingValue=0,
             MinValue=0,
-            MaxValue=100,
+            MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        self.GlowBlueSlider = Options.Slider (
+        self.BackgroundBlueSlider = Options.Slider (
             Caption="Blue",
-            Description="Blue value for the glow colour.",
+            Description="Blue value for the Background colour.",
             StartingValue=0,
             MinValue=0,
-            MaxValue=100,
+            MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        self.GlowAlphaSlider = Options.Slider (
+        self.BackgroundAlphaSlider = Options.Slider (
             Caption="Alpha",
-            Description="Alpha value for the glow colour.",
+            Description="Alpha value for the Background colour.",
             StartingValue=0,
             MinValue=0,
-            MaxValue=100,
+            MaxValue=255,
             Increment=1,
             IsHidden=False
         )
-        self.GlowSize = Options.Slider (
-            Caption="Glow Size",
-            Description="Size for the text glow.",
+        self.BackgroundSize = Options.Slider (
+            Caption="Background Size",
+            Description="Size for the text Background.",
             StartingValue=0,
-            MinValue=0,
-            MaxValue=100,
+            MinValue=25,
+            MaxValue=300,
             Increment=1,
             IsHidden=False
         )
-        self.GlowSettings = Options.Nested (
-            Caption = "Glow Settings",
-            Description = "Glow settings for the farm counter.",
-            Children = [self.GlowRedSlider, self.GlowGreenSlider, self.GlowBlueSlider, self.GlowAlphaSlider, self.GlowSize],
+        self.BackgroundSettings = Options.Nested (
+            Caption = "Background Settings",
+            Description = "Background settings for the farm counter.",
+            Children = [self.BackgroundRedSlider, self.BackgroundGreenSlider, self.BackgroundBlueSlider, self.BackgroundAlphaSlider, self.BackgroundSize],
             IsHidden = False
         )
 
@@ -127,16 +128,16 @@ Run: {}"""
             Caption="Font Size",
             Description="Font scaling as a percentage.",
             StartingValue=100,
-            MinValue=0,
-            MaxValue=200,
+            MinValue=50,
+            MaxValue=300,
             Increment=1,
             IsHidden=False
         )
 
         self.xPosSlider = Options.Slider (
             Caption="X Position",
-            Description="X position for the text as a percentage.",
-            StartingValue=4,
+            Description="X position for the counter as a percentage of the total screen.",
+            StartingValue=2,
             MinValue=0,
             MaxValue=100,
             Increment=1,
@@ -144,14 +145,14 @@ Run: {}"""
         )
         self.yPosSlider = Options.Slider (
             Caption="Y Position",
-            Description="Y position for the text as a percentage.",
-            StartingValue=4,
+            Description="Y position for the counter as a percentage of the total screen.",
+            StartingValue=2,
             MinValue=0,
             MaxValue=100,
             Increment=1,
             IsHidden=False
         )
-        self.TextPos = Options.Nested (
+        self.CounterPos = Options.Nested (
             Caption = "Text Position",
             Description = "Text position for the farm counter.",
             Children = [self.xPosSlider, self.yPosSlider],
@@ -159,34 +160,30 @@ Run: {}"""
         )
         self.Options = [
             self.TextColour,
-            self.GlowSettings,
-            self.TextPos,
+            self.BackgroundSettings,
+            self.CounterPos,
             self.SizeSlider
         ]
 
-    def DisplayText(self, canvas, text, x, y, color, scalex, scaley) -> None:
+    def DisplayText(self, canvas, text, x, y, color, scalex, scaley, BackgroundColour, BackgroundScale) -> None:
         canvas.Font = unrealsdk.FindObject("Font", "UI_Fonts.Font_Willowbody_18pt")
 
         trueX = canvas.SizeX * x
         trueY = canvas.SizeX * y
         canvas.SetPos(trueX, trueY, 0)
+        ret, backgroundX, backgroundY = canvas.TextSize(text, 0, 0)
+
+        try:
+            canvas.SetDrawColorStruct(BackgroundColour) #b, g, r, a
+        except:
+            pass
+        canvas.DrawBox(backgroundX*BackgroundScale, backgroundY*BackgroundScale)
+
         try:
             canvas.SetDrawColorStruct(color) #b, g, r, a
         except:
             pass
-
-        glowRad = (
-            (self.GlowSize.CurrentValue/1), 
-            (self.GlowSize.CurrentValue/1)
-        )
-        glowColour = (
-            (self.GlowRedSlider.CurrentValue/1), 
-            (self.GlowGreenSlider.CurrentValue/1), 
-            (self.GlowBlueSlider.CurrentValue/1), 
-            (self.GlowAlphaSlider.CurrentValue/1)
-        )
-        glowInfo = (1, glowColour, glowRad, glowRad)
-        canvas.DrawText(text, False, scalex, scaley, (0, 1, glowInfo))
+        canvas.DrawText(text, False, scalex, scaley, ())
 
     def displayFeedback(self, params):
         if self.Farming:           
@@ -205,8 +202,15 @@ Run: {}"""
                     self.RedSlider.CurrentValue,
                     self.AlphaSlider.CurrentValue
                 ), 
-                self.SizeSlider.CurrentValue / 95, 
-                self.SizeSlider.CurrentValue / 100
+                self.SizeSlider.CurrentValue / 100, 
+                self.SizeSlider.CurrentValue / 100,
+                (
+                    self.BackgroundBlueSlider.CurrentValue, 
+                    self.BackgroundGreenSlider.CurrentValue, 
+                    self.BackgroundRedSlider.CurrentValue, 
+                    self.BackgroundAlphaSlider.CurrentValue
+                ),
+                self.BackgroundSize.CurrentValue/100 * self.SizeSlider.CurrentValue/100
             )
         elif not self.Farming: 
             self.Farming = False
@@ -223,31 +227,39 @@ Run: {}"""
     def GameInputPressed(self, input):
         if input.Name == "Toggle Farming":
             self.Farming = not self.Farming
-            if self.Farming:
-                unrealsdk.Log(f"Enabled Farm Counter")
-            else:
-                unrealsdk.Log(f"Disabled Farm Counter")
+            if not self.Farming:
+                self.RunCount = 0
+                self.FarmName = ""
 
         if input.Name == "Get Farm Name":
             self.GetFarmName()
 
     def Enable(self):
 
-        def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> None:
+        def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
                 self.RunCount += 1
+                if self.Farming:
+                    self.isFarming = self.Farming
+                    self.Farming = False
                 return True
 
         def onPostRender(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
             self.displayFeedback(params)
             return True
 
+        def OnLoad(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+            if self.isFarming:
+                    self.Farming = self.isFarming
+
         unrealsdk.RegisterHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender", onPostRender)
         unrealsdk.RegisterHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit", onSaveQuit)
         unrealsdk.RegisterHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving", onSaveQuit)
+        unrealsdk.RegisterHook("WillowGame.WillowPlayerController.WillowClientDisableLoadingMovie", "OnLoad", OnLoad)
 
     def Disable(self):
         unrealsdk.RemoveHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender")
         unrealsdk.RemoveHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit")
         unrealsdk.RemoveHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving")
+        unrealsdk.RemoveHook("WillowGame.WillowPlayerController.WillowClientDisableLoadingMovie", "OnLoad")
 
 RegisterMod(FarmCounter())
