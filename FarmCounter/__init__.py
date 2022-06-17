@@ -19,8 +19,10 @@ class FarmCounter(SDKMod):
     isFarming: bool = False
     RunCount: int = 0
     FarmName: str = ""
-    MessageText = """Farming: {}
-Run: {}"""
+    MessageText = """ Farming: {} 
+ Run #{} """
+    M1 = " Farming: {} "
+    M2 = " Run #{} "
 
     Keybinds: list = [
         Keybind("Toggle Farming", "F3"),
@@ -112,7 +114,7 @@ Run: {}"""
             Caption="Background Size",
             Description="Size for the text Background.",
             StartingValue=0,
-            MinValue=25,
+            MinValue=50,
             MaxValue=300,
             Increment=1,
             IsHidden=False
@@ -125,8 +127,8 @@ Run: {}"""
         )
 
         self.SizeSlider = Options.Slider (
-            Caption="Font Size",
-            Description="Font scaling as a percentage.",
+            Caption="Counter Size",
+            Description="Counter scaling as a percentage.",
             StartingValue=100,
             MinValue=50,
             MaxValue=300,
@@ -153,7 +155,7 @@ Run: {}"""
             IsHidden=False
         )
         self.CounterPos = Options.Nested (
-            Caption = "Text Position",
+            Caption = "Counter Position",
             Description = "Text position for the farm counter.",
             Children = [self.xPosSlider, self.yPosSlider],
             IsHidden = False
@@ -167,23 +169,31 @@ Run: {}"""
 
     def DisplayText(self, canvas, text, x, y, color, scalex, scaley, BackgroundColour, BackgroundScale) -> None:
         canvas.Font = unrealsdk.FindObject("Font", "UI_Fonts.Font_Willowbody_18pt")
+        texture = unrealsdk.FindObject("Texture2D", "EngineResources.WhiteSquareTexture")
 
         trueX = canvas.SizeX * x
         trueY = canvas.SizeX * y
-        canvas.SetPos(trueX, trueY, 0)
-        ret, backgroundX, backgroundY = canvas.TextSize(text, 0, 0)
+
+        x1, y1 = canvas.TextSize(self.M1.format(self.FarmName), 0, 0)
+        x2, y2 = canvas.TextSize(self.M2.format(self.RunCount), 0, 0)
+        backgroundX = x1 if x1 > x2 else x2
+        backgroundY = (y1 + y2)
+
+        canvas.SetPos(trueX-(0.5*backgroundX*scalex*(BackgroundScale-1)), trueY-(0.5*backgroundY*scaley*(BackgroundScale-1)), 0)
 
         try:
             canvas.SetDrawColorStruct(BackgroundColour) #b, g, r, a
         except:
             pass
-        canvas.DrawBox(backgroundX*BackgroundScale, backgroundY*BackgroundScale)
-
+        canvas.DrawRect(backgroundX*BackgroundScale*scalex, backgroundY*BackgroundScale*scaley, texture)
+                
+        canvas.SetPos(trueX, trueY, 0)
         try:
             canvas.SetDrawColorStruct(color) #b, g, r, a
         except:
             pass
-        canvas.DrawText(text, False, scalex, scaley, ())
+        #canvas.SetBGColor(BackgroundColour[2], BackgroundColour[1], BackgroundColour[0], BackgroundColour[3])
+        canvas.DrawText(text, False, scalex, scaley, (False, True))
 
     def displayFeedback(self, params):
         if self.Farming:           
@@ -210,7 +220,7 @@ Run: {}"""
                     self.BackgroundRedSlider.CurrentValue, 
                     self.BackgroundAlphaSlider.CurrentValue
                 ),
-                self.BackgroundSize.CurrentValue/100 * self.SizeSlider.CurrentValue/100
+                self.BackgroundSize.CurrentValue/100
             )
         elif not self.Farming: 
             self.Farming = False
@@ -238,9 +248,8 @@ Run: {}"""
 
         def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
                 self.RunCount += 1
-                if self.Farming:
-                    self.isFarming = self.Farming
-                    self.Farming = False
+                self.isFarming = self.Farming
+                self.Farming = False
                 return True
 
         def onPostRender(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
@@ -249,17 +258,17 @@ Run: {}"""
 
         def OnLoad(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
             if self.isFarming:
-                    self.Farming = self.isFarming
+                self.Farming = self.isFarming
 
         unrealsdk.RegisterHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender", onPostRender)
         unrealsdk.RegisterHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit", onSaveQuit)
         unrealsdk.RegisterHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving", onSaveQuit)
-        unrealsdk.RegisterHook("WillowGame.WillowPlayerController.WillowClientDisableLoadingMovie", "OnLoad", OnLoad)
+        #unrealsdk.RegisterHook("WillowGame.WillowHUD.CreateWeaponScopeMovie", "OnLoad", OnLoad)
 
     def Disable(self):
         unrealsdk.RemoveHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender")
         unrealsdk.RemoveHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit")
         unrealsdk.RemoveHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving")
-        unrealsdk.RemoveHook("WillowGame.WillowPlayerController.WillowClientDisableLoadingMovie", "OnLoad")
+        #unrealsdk.RemoveHook("WillowGame.WillowHUD.CreateWeaponScopeMovie", "OnLoad")
 
 RegisterMod(FarmCounter())
