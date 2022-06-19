@@ -1,9 +1,16 @@
 import unrealsdk
 from Mods.ModMenu import RegisterMod, SDKMod, Options, Keybind, EnabledSaveType, Mods, ModTypes
 from Mods.UserFeedback import TextInputBox
-from typing import Tuple
+from types import ModuleType
+from typing import Tuple, Optional
+import re
 
-
+Quickload: Optional[ModuleType]
+try:
+    from Mods import Quickload
+except ImportError:
+    unrealsdk.Log("Unable to find Quickload")
+    Quickload = None
 
 class FarmCounter(SDKMod):
     Name: str = "Farm Counter"
@@ -23,10 +30,14 @@ class FarmCounter(SDKMod):
  Run #{} """
     M1 = " Farming: {} "
     M2 = " Run #{} "
+    HasOverriddenML: bool = False
 
     Keybinds: list = [
         Keybind("Toggle Farming", "F3"),
         Keybind("Get Farm Name", "F4"),
+        Keybind("Get Farm Count", "Insert"),
+        Keybind("Increase Farm Count", "PageUp"),
+        Keybind("Decrease Farm Count", "PageDown"),
     ]
 
     def __init__(self) -> None:
@@ -104,7 +115,7 @@ class FarmCounter(SDKMod):
         self.BackgroundAlphaSlider = Options.Slider (
             Caption="Alpha",
             Description="Alpha value for the Background colour.",
-            StartingValue=0,
+            StartingValue=45,
             MinValue=0,
             MaxValue=255,
             Increment=1,
@@ -113,7 +124,7 @@ class FarmCounter(SDKMod):
         self.BackgroundSize = Options.Slider (
             Caption="Background Size",
             Description="Size for the text Background.",
-            StartingValue=0,
+            StartingValue=100,
             MinValue=50,
             MaxValue=300,
             Increment=1,
@@ -126,10 +137,62 @@ class FarmCounter(SDKMod):
             IsHidden = False
         )
 
+        self.GlowRedSlider = Options.Slider (
+            Caption="Red",
+            Description="Red value for the Glow colour.",
+            StartingValue=0,
+            MinValue=0,
+            MaxValue=100,
+            Increment=1,
+            IsHidden=False
+        )
+        self.GlowGreenSlider = Options.Slider (
+            Caption="Green",
+            Description="Green value for the Glow colour.",
+            StartingValue=0,
+            MinValue=0,
+            MaxValue=100,
+            Increment=1,
+            IsHidden=False
+        )
+        self.GlowBlueSlider = Options.Slider (
+            Caption="Blue",
+            Description="Blue value for the Glow colour.",
+            StartingValue=0,
+            MinValue=0,
+            MaxValue=100,
+            Increment=1,
+            IsHidden=False
+        )
+        self.GlowAlphaSlider = Options.Slider (
+            Caption="Alpha",
+            Description="Alpha value for the Glow colour.",
+            StartingValue=0,
+            MinValue=0,
+            MaxValue=100,
+            Increment=1,
+            IsHidden=False
+        )
+        self.GlowSize = Options.Slider (
+            Caption="Glow Size",
+            Description="Size for the text Glow.",
+            StartingValue=0,
+            MinValue=0,
+            MaxValue=100,
+            Increment=1,
+            IsHidden=False
+        )
+        self.GlowSettings = Options.Nested (
+            Caption = "Glow Settings",
+            Description = "Glow settings for the farm counter.",
+            Children = [self.GlowRedSlider, self.GlowGreenSlider, self.GlowBlueSlider, self.GlowAlphaSlider, self.GlowSize],
+            IsHidden = False
+        )
+
         self.SizeSlider = Options.Slider (
             Caption="Counter Size",
             Description="Counter scaling as a percentage.",
-            StartingValue=100,
+            StartingValue=130,
             MinValue=50,
             MaxValue=300,
             Increment=1,
@@ -139,7 +202,7 @@ class FarmCounter(SDKMod):
         self.xPosSlider = Options.Slider (
             Caption="X Position",
             Description="X position for the counter as a percentage of the total screen.",
-            StartingValue=2,
+            StartingValue=1,
             MinValue=0,
             MaxValue=100,
             Increment=1,
@@ -148,7 +211,7 @@ class FarmCounter(SDKMod):
         self.yPosSlider = Options.Slider (
             Caption="Y Position",
             Description="Y position for the counter as a percentage of the total screen.",
-            StartingValue=2,
+            StartingValue=1,
             MinValue=0,
             MaxValue=100,
             Increment=1,
@@ -160,14 +223,24 @@ class FarmCounter(SDKMod):
             Children = [self.xPosSlider, self.yPosSlider],
             IsHidden = False
         )
+
+        self.AutoCount = Options.Boolean (
+            Caption = "Automatic Counting",
+            Description = "Enable or disable automatic incrementing of the farm counter on save quit.",
+            StartingValue = True,
+            Choices = ("Off", "On"),
+            IsHidden = False
+        )
         self.Options = [
             self.TextColour,
             self.BackgroundSettings,
+            self.GlowSettings,
             self.CounterPos,
-            self.SizeSlider
+            self.SizeSlider,
+            self.AutoCount
         ]
 
-    def DisplayText(self, canvas, text, x, y, color, scalex, scaley, BackgroundColour, BackgroundScale) -> None:
+    def DisplayText(self, canvas, text, x, y, color, scalex, scaley, BackgroundColour, BackgroundScale, FontRenderInfo) -> None:
         canvas.Font = unrealsdk.FindObject("Font", "UI_Fonts.Font_Willowbody_18pt")
         texture = unrealsdk.FindObject("Texture2D", "EngineResources.WhiteSquareTexture")
 
@@ -193,14 +266,38 @@ class FarmCounter(SDKMod):
         except:
             pass
         #canvas.SetBGColor(BackgroundColour[2], BackgroundColour[1], BackgroundColour[0], BackgroundColour[3])
-        canvas.DrawText(text, False, scalex, scaley, (False, True))
+        
+        canvas.DrawText(text, False, scalex, scaley, FontRenderInfo)
 
     def displayFeedback(self, params):
+        if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() == "menumap":
+            return True
         if self.Farming:           
             if not params.Canvas:
                 return True
 
             canvas = params.Canvas
+            glowColour = (
+                self.GlowRedSlider.CurrentValue, 
+                self.GlowGreenSlider.CurrentValue, 
+                self.GlowBlueSlider.CurrentValue, 
+                self.GlowAlphaSlider.CurrentValue
+            )
+            glowRadius = (
+                self.GlowSize.CurrentValue,
+                self.GlowSize.CurrentValue
+            )
+            gInfo = (
+                True,
+                glowColour,
+                glowRadius,
+                glowRadius
+            )
+            FontRenderInfo = (
+                False,
+                True,
+                gInfo
+            )
             self.DisplayText(
                 canvas, 
                 self.MessageText.format(self.FarmName, self.RunCount), 
@@ -220,10 +317,9 @@ class FarmCounter(SDKMod):
                     self.BackgroundRedSlider.CurrentValue, 
                     self.BackgroundAlphaSlider.CurrentValue
                 ),
-                self.BackgroundSize.CurrentValue/100
+                self.BackgroundSize.CurrentValue/100,
+                FontRenderInfo
             )
-        elif not self.Farming: 
-            self.Farming = False
         return True
 
     def GetFarmName(self):
@@ -233,6 +329,14 @@ class FarmCounter(SDKMod):
         FarmNameInput.OnSubmit = setFarmName
         FarmNameInput.Show()
 
+    def GetFarmCount(self):
+        FarmCountInput = TextInputBox("Enter Farm Count", "")
+        FarmCountInput.IsAllowedToWrite = lambda c, m, p: c in "0123456789"
+        def setFarmCount(Message: str) -> None:
+            self.FarmCount = int(Message)
+        FarmCountInput.OnSubmit = setFarmCount
+        FarmCountInput.Show()
+
 
     def GameInputPressed(self, input):
         if input.Name == "Toggle Farming":
@@ -241,15 +345,31 @@ class FarmCounter(SDKMod):
                 self.RunCount = 0
                 self.FarmName = ""
 
-        if input.Name == "Get Farm Name":
+        elif input.Name == "Get Farm Name":
             self.GetFarmName()
+        elif input.Name == "Get Farm Count":
+            self.GetFarmCount()
+        elif input.Name == "Increase Farm Count":
+            self.ChangeCounter(1)
+        elif input.Name == "Decrease Farm Count":
+            if self.RunCount > 0:
+                self.ChangeCounter(-1)
+
+    def ChangeCounter(self, n):
+        if self.Farming:
+            self.RunCount += n
+
+    def FC_ReloadCurrentMap(self, skipSave):
+        self.ChangeCounter(1)
+        self.ML_ReloadCurrentMap(skipSave)
 
     def Enable(self):
 
         def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
-                self.RunCount += 1
-                self.isFarming = self.Farming
-                self.Farming = False
+                if self.AutoCount.CurrentValue:
+                    self.ChangeCounter(1)
+                #self.isFarming = self.Farming
+                #self.Farming = False
                 return True
 
         def onPostRender(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
@@ -260,12 +380,21 @@ class FarmCounter(SDKMod):
             if self.isFarming:
                 self.Farming = self.isFarming
 
+        if not self.HasOverriddenML:
+            if Quickload is not None:
+                self.ML_ReloadCurrentMap = Quickload._ReloadCurrentMap
+                Quickload._ReloadCurrentMap = self.FC_ReloadCurrentMap
+                self.HasOverriddenML = True
         unrealsdk.RegisterHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender", onPostRender)
         unrealsdk.RegisterHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit", onSaveQuit)
         unrealsdk.RegisterHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving", onSaveQuit)
         #unrealsdk.RegisterHook("WillowGame.WillowHUD.CreateWeaponScopeMovie", "OnLoad", OnLoad)
 
     def Disable(self):
+        if Quickload is not None:
+            self.ML_ReloadCurrentMap = Quickload._ReloadCurrentMap
+            Quickload._ReloadCurrentMap = self.FC_ReloadCurrentMap
+            self.HasOverriddenML = False
         unrealsdk.RemoveHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender")
         unrealsdk.RemoveHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit")
         unrealsdk.RemoveHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving")
