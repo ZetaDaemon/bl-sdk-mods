@@ -1,6 +1,10 @@
 import unrealsdk
 from Mods.ModMenu import RegisterMod, SDKMod, Options, Keybind, EnabledSaveType, Mods, ModTypes
-from Mods.UserFeedback import TextInputBox
+try:
+  from Mods.UserFeedback import TextInputBox
+except ImportError as ex:
+  unrealsdk.Log("Unable to load FarmCounter, missing UserFeedback")
+  raise ex
 from types import ModuleType
 from typing import Tuple, Optional
 import re
@@ -9,7 +13,6 @@ Quickload: Optional[ModuleType]
 try:
     from Mods import Quickload
 except ImportError:
-    unrealsdk.Log("Unable to find Quickload")
     Quickload = None
 
 class FarmCounter(SDKMod):
@@ -23,8 +26,7 @@ class FarmCounter(SDKMod):
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
     Farming: bool = False
-    isFarming: bool = False
-    RunCount: int = 0
+    RunCount: int = 1
     FarmName: str = ""
     MessageText = """ Farming: {} 
  Run #{} """
@@ -186,7 +188,7 @@ class FarmCounter(SDKMod):
             Caption = "Glow Settings",
             Description = "Glow settings for the farm counter.",
             Children = [self.GlowRedSlider, self.GlowGreenSlider, self.GlowBlueSlider, self.GlowAlphaSlider, self.GlowSize],
-            IsHidden = False
+            IsHidden = True
         )
 
         self.SizeSlider = Options.Slider (
@@ -265,7 +267,6 @@ class FarmCounter(SDKMod):
             canvas.SetDrawColorStruct(color) #b, g, r, a
         except:
             pass
-        #canvas.SetBGColor(BackgroundColour[2], BackgroundColour[1], BackgroundColour[0], BackgroundColour[3])
         
         canvas.DrawText(text, False, scalex, scaley, FontRenderInfo)
 
@@ -333,7 +334,7 @@ class FarmCounter(SDKMod):
         FarmCountInput = TextInputBox("Enter Farm Count", "")
         FarmCountInput.IsAllowedToWrite = lambda c, m, p: c in "0123456789"
         def setFarmCount(Message: str) -> None:
-            self.FarmCount = int(Message)
+            self.RunCount = int(Message)
         FarmCountInput.OnSubmit = setFarmCount
         FarmCountInput.Show()
 
@@ -342,7 +343,7 @@ class FarmCounter(SDKMod):
         if input.Name == "Toggle Farming":
             self.Farming = not self.Farming
             if not self.Farming:
-                self.RunCount = 0
+                self.RunCount = 1
                 self.FarmName = ""
 
         elif input.Name == "Get Farm Name":
@@ -350,35 +351,29 @@ class FarmCounter(SDKMod):
         elif input.Name == "Get Farm Count":
             self.GetFarmCount()
         elif input.Name == "Increase Farm Count":
-            self.ChangeCounter(1)
+            self.AddToCounter(1)
         elif input.Name == "Decrease Farm Count":
-            if self.RunCount > 0:
-                self.ChangeCounter(-1)
+            if self.RunCount > 1:
+                self.AddToCounter(-1)
 
-    def ChangeCounter(self, n):
+    def AddToCounter(self, n):
         if self.Farming:
             self.RunCount += n
 
     def FC_ReloadCurrentMap(self, skipSave):
-        self.ChangeCounter(1)
+        self.AddToCounter(1)
         self.ML_ReloadCurrentMap(skipSave)
 
     def Enable(self):
 
         def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
                 if self.AutoCount.CurrentValue:
-                    self.ChangeCounter(1)
-                #self.isFarming = self.Farming
-                #self.Farming = False
+                    self.AddToCounter(1)
                 return True
 
         def onPostRender(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
             self.displayFeedback(params)
             return True
-
-        def OnLoad(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
-            if self.isFarming:
-                self.Farming = self.isFarming
 
         if not self.HasOverriddenML:
             if Quickload is not None:
@@ -388,7 +383,6 @@ class FarmCounter(SDKMod):
         unrealsdk.RegisterHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender", onPostRender)
         unrealsdk.RegisterHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit", onSaveQuit)
         unrealsdk.RegisterHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving", onSaveQuit)
-        #unrealsdk.RegisterHook("WillowGame.WillowHUD.CreateWeaponScopeMovie", "OnLoad", OnLoad)
 
     def Disable(self):
         if Quickload is not None:
@@ -398,6 +392,5 @@ class FarmCounter(SDKMod):
         unrealsdk.RemoveHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender")
         unrealsdk.RemoveHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit")
         unrealsdk.RemoveHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving")
-        #unrealsdk.RemoveHook("WillowGame.WillowHUD.CreateWeaponScopeMovie", "OnLoad")
 
 RegisterMod(FarmCounter())
