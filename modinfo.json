@@ -17,7 +17,7 @@
       "types": ["Utility"],
       "latest": "1.0",
       "versions": {
-        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/tree/main/ZetaCommands"
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/FarmCounter/FarmCounter.zip"
       },
       "UserFeedback": {
         "AsyncUtil": "=1.5"
