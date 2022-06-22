@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "authors": "ZetaDaemon",
+    "authors": "ZetaDæmon",
     "source": "https://github.com/ZetaDaemon/bl-sdk-mods/",
     "supports": ["BL2", "TPS", "AoDK"],
     "license": "GNU GPLv3"
@@ -15,12 +15,13 @@
         "Adds a customiseable farm counter to keep track of your runs."
       ],
       "types": ["Utility"],
-      "latest": "1.0",
+      "latest": "1.1",
       "versions": {
-        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/FarmCounter/FarmCounter.zip"
+        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/FarmCounter/FarmCounter.zip",
+        "1.0": ""
       },
-      "UserFeedback": {
-        "AsyncUtil": "=1.5"
+      "requirements": {
+        "UserFeedback": ">=1.5"
       }
     }
   ]
