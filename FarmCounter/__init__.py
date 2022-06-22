@@ -1,5 +1,5 @@
 import unrealsdk
-from Mods.ModMenu import RegisterMod, SDKMod, Options, Keybind, EnabledSaveType, Mods, ModTypes
+from Mods.ModMenu import RegisterMod, SDKMod, Options, Keybind, EnabledSaveType, Mods, ModTypes, GetSettingsFilePath
 try:
   from Mods.UserFeedback import TextInputBox
 except ImportError as ex:
@@ -7,6 +7,7 @@ except ImportError as ex:
   raise ex
 from types import ModuleType
 from typing import Tuple, Optional
+from os import path
 import re
 
 Quickload: Optional[ModuleType]
@@ -15,13 +16,16 @@ try:
 except ImportError:
     Quickload = None
 
+
+_OUTPUT_FILE_NAME = "FarmCounter_Output.txt"
+
 class FarmCounter(SDKMod):
     Name: str = "Farm Counter"
     Author: str = "ZetaDæmon"
     Description: str = (
         "Adds a simple farm counter to track how many times you have run the current farm."
     )
-    Version: str = "1.0"
+    Version: str = "1.1"
     Types: ModTypes = ModTypes.Utility
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
@@ -30,6 +34,8 @@ class FarmCounter(SDKMod):
     FarmName: str = ""
     MessageText = """ Farming: {} 
  Run #{} """
+    ManualMessageText = """Farming: {}
+Run #{}"""
     M1 = " Farming: {} "
     M2 = " Run #{} "
     HasOverriddenML: bool = False
@@ -41,6 +47,17 @@ class FarmCounter(SDKMod):
         Keybind("Increase Farm Count", "PageUp"),
         Keybind("Decrease Farm Count", "PageDown"),
     ]
+
+    def ManualOutput(self, output = ManualMessageText, useFormat = True):
+        with open(path.join(path.dirname(GetSettingsFilePath(self)), _OUTPUT_FILE_NAME), "w") as out:
+            if useFormat:
+                if self.Farming:
+                    out.write(output.format(self.FarmName, self.RunCount))
+                else:
+                    out.write("")
+            else:
+                out.write(output)
+
 
     def __init__(self) -> None:
         self.Options = []
@@ -233,13 +250,23 @@ class FarmCounter(SDKMod):
             Choices = ("Off", "On"),
             IsHidden = False
         )
+
+        self.ManualDisplay = Options.Boolean (
+            Caption = "Manual Display",
+            Description = f"Writes the farm count to the text file '{_OUTPUT_FILE_NAME}' inside the mod folder instead of on screen for use with OBS overlays and such.",
+            StartingValue = False,
+            Choices = ("Off", "On"),
+            IsHidden = False
+        )
+
         self.Options = [
             self.TextColour,
             self.BackgroundSettings,
             self.GlowSettings,
             self.CounterPos,
             self.SizeSlider,
-            self.AutoCount
+            self.AutoCount,
+            self.ManualDisplay
         ]
 
     def DisplayText(self, canvas, text, x, y, color, scalex, scaley, BackgroundColour, BackgroundScale, FontRenderInfo) -> None:
@@ -327,6 +354,8 @@ class FarmCounter(SDKMod):
         FarmNameInput = TextInputBox("Enter Farm Name", "")
         def setFarmName(Message: str) -> None:
             self.FarmName = Message
+            #if self.ManualDisplay.CurrentValue:
+                #self.ManualOutput()
         FarmNameInput.OnSubmit = setFarmName
         FarmNameInput.Show()
 
@@ -335,6 +364,8 @@ class FarmCounter(SDKMod):
         FarmCountInput.IsAllowedToWrite = lambda c, m, p: c in "0123456789"
         def setFarmCount(Message: str) -> None:
             self.RunCount = int(Message)
+            #if self.ManualDisplay.CurrentValue:
+                #self.ManualOutput()
         FarmCountInput.OnSubmit = setFarmCount
         FarmCountInput.Show()
 
@@ -355,6 +386,8 @@ class FarmCounter(SDKMod):
         elif input.Name == "Decrease Farm Count":
             if self.RunCount > 1:
                 self.AddToCounter(-1)
+        #if self.ManualDisplay.CurrentValue:
+            #self.ManualOutput()
 
     def AddToCounter(self, n):
         if self.Farming:
@@ -362,9 +395,13 @@ class FarmCounter(SDKMod):
 
     def FC_ReloadCurrentMap(self, skipSave):
         self.AddToCounter(1)
+        #if self.ManualDisplay.CurrentValue:
+            #self.ManualOutput()
         self.ML_ReloadCurrentMap(skipSave)
 
+
     def Enable(self):
+        self.ManualOutput("", False)
 
         def onSaveQuit(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
                 if self.AutoCount.CurrentValue:
@@ -372,7 +409,13 @@ class FarmCounter(SDKMod):
                 return True
 
         def onPostRender(caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
-            self.displayFeedback(params)
+            if not self.ManualDisplay.CurrentValue:
+                self.displayFeedback(params)
+            else:
+                if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() != "menumap":
+                    self.ManualOutput()
+                else:
+                    self.ManualOutput("", False)
             return True
 
         if not self.HasOverriddenML:
@@ -392,5 +435,7 @@ class FarmCounter(SDKMod):
         unrealsdk.RemoveHook("WillowGame.WillowGameViewportClient.PostRender", "Postrender")
         unrealsdk.RemoveHook("WillowGame.PauseGFxMovie.CompleteQuitToMenu", "SaveQuit")
         unrealsdk.RemoveHook("Engine.PlayerController.NotifyDisconnect", "QuitWithoutSaving")
+        self.Farming = False
+        self.ManualOutput("", False)
 
 RegisterMod(FarmCounter())
