@@ -243,6 +243,14 @@ Run #{}"""
             IsHidden = False
         )
 
+        self.MenuHide = Options.Boolean (
+            Caption = "Hide on Menu",
+            Description = "Enabling hides the counter while on the main menu, disable to have showing at all times",
+            StartingValue = True,
+            Choices = ("Off", "On"),
+            IsHidden = False
+        )
+
         self.AutoCount = Options.Boolean (
             Caption = "Automatic Counting",
             Description = "Enable or disable automatic incrementing of the farm counter on save quit.",
@@ -265,6 +273,7 @@ Run #{}"""
             self.GlowSettings,
             self.CounterPos,
             self.SizeSlider,
+            self.MenuHide,
             self.AutoCount,
             self.ManualDisplay
         ]
@@ -298,7 +307,7 @@ Run #{}"""
         canvas.DrawText(text, False, scalex, scaley, FontRenderInfo)
 
     def displayFeedback(self, params):
-        if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() == "menumap":
+        if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() == "menumap" and self.MenuHide.CurrentValue:
             return True
         if self.Farming:           
             if not params.Canvas:
@@ -412,7 +421,7 @@ Run #{}"""
             if not self.ManualDisplay.CurrentValue:
                 self.displayFeedback(params)
             else:
-                if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() != "menumap":
+                if unrealsdk.GetEngine().GetCurrentWorldInfo().GetStreamingPersistentMapName().lower() != "menumap" or not self.MenuHide.CurrentValue:
                     self.ManualOutput()
                 else:
                     self.ManualOutput("", False)
