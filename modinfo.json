@@ -23,6 +23,20 @@
       "requirements": {
         "UserFeedback": ">=1.5"
       }
+    },
+    {
+      "name": "Movement Tech",
+      "description": [
+        "Allows for double jumps and slamming in BL2."
+      ],
+      "tagline": [
+        "Allows for double jumps and slamming in BL2."
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/MovementTech/MovementTech.zip"
+      }
     }
   ]
 }
