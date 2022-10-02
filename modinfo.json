@@ -37,6 +37,24 @@
       "versions": {
         "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/MovementTech/MovementTech.zip"
       }
+    },
+    {
+      "name": "Difficulty Modes",
+      "description": [
+        "Replaces BAR with a difficulty mode that can be changed in the options."
+      ],
+      "tagline": [
+        "Replaces BAR with a difficulty mode that can be changed in the options."
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/DifficultyModes/DifficultyModes.zip"
+      },
+      "requirements": {
+        "Structs": ">=1.0",
+        "Enums": ">=1.1"
+      }
     }
   ]
 }
