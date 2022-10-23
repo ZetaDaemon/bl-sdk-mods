@@ -19,15 +19,10 @@ def object_to_clone(base: unrealsdk.UObject, flag: bool):
 def handle_ResolverChain(base: unrealsdk.UObject, clone: unrealsdk.UObject, ResolverChainName: str, flag: bool):
 	ResolverChain = getattr(base, ResolverChainName)
 	cloned_ResolverChain = []
-	try:
-		for Resolver in ResolverChain:
-			if Resolver.PathName(Resolver) == "WillowGame.Default__DesignerAttributeDefinition:ValueResolver":
-				cloned_ResolverChain.append(Resolver)
-			else:
-				clonedResolver = clone_object(object_to_clone(Resolver, flag), clone, "")
-				cloned_ResolverChain.append(clonedResolver)
-	except:
-		unrealsdk.Log(f"clone_attr: Error on line 22")
+	for Resolver in ResolverChain:
+		clonedResolver = clone_object(object_to_clone(Resolver, flag), clone, Resolver.Class.Name)
+		cloned_ResolverChain.append(clonedResolver)
+		#unrealsdk.Log(cloned_ResolverChain)
 	setattr(clone, ResolverChainName, cloned_ResolverChain) 
 
 
