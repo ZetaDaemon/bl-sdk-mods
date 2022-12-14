@@ -1,12 +1,12 @@
 import unrealsdk
-from Mods.ModMenu import SDKMod, EnabledSaveType, ModTypes, Game
+from Mods.ModMenu import SDKMod, EnabledSaveType, ModTypes, Game, Options
 
 
 class MovementTech(SDKMod):
     Name: str = "Movement Tech"
     Description: str = "Enables slamming and double jumps for BL2."
-    Author: str = "ZetaDæmon"
-    Version: str = "1.0"
+    Author: str = "ZetaDaemon"
+    Version: str = "1.1"
     SupportedGames = Game.BL2
     Types: ModTypes = ModTypes.Gameplay
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadOnMainMenu
@@ -17,6 +17,7 @@ class MovementTech(SDKMod):
     Min_Slam_Height = 210
     Slam_Radius = 500
     Previous_Z = 0
+    Jump_Strength_Base = 500
 
     Base_Impact_Particles = [
         "FX_CHAR_Shared_Shield.Particles.Novas.Part_Incendiary_Nova_Shield_Explosion",
@@ -65,8 +66,22 @@ class MovementTech(SDKMod):
 
     Wants_To_Double_Jump = False
     Double_Jumped = False
-    Jump_Velocity = 420
     Jump_Sound = "Ake_Fs_Player.Ak_Play_Fs_Jump"
+
+
+    def __init__(self) -> None:
+        self.DoubleJumpVelocity = Options.Slider (
+            Caption="Double Jump Strength",
+            Description="Double jump strenght multiplier.",
+            StartingValue=1,
+            MinValue=0.5,
+            MaxValue=4.0,
+            Increment=0.1,
+            IsHidden=False
+        )
+        self.Options = [
+            self.DoubleJumpVelocity
+        ]
 
     def get_damage_type(self, framename) -> str:
         if framename in self.Frame_Names:
@@ -121,10 +136,10 @@ class MovementTech(SDKMod):
                 self.Emmitter_Idx_Lists[idx]
             )
 
-    def start_slam(self, caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+    def start_slam(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
         if self.Want_To_Slam:
             return
-        pc = caller.Outer
+        pc = this.Outer
         if not pc.Pawn:
             return True
 
@@ -144,24 +159,26 @@ class MovementTech(SDKMod):
         self.Want_To_Slam = True
         self.Fall_Direction = (0, 0, self.Slam_Speed)
 
-    def jump(self, caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+    def jump(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
         if self.Double_Jumped:
             return True
         if self.Want_To_Slam:
             return True
-        pc = caller.Outer
+        pc = this.Outer
         if not pc.Pawn:
             return True
         if not pc.Pawn.IsOnGroundOrShortFall():
             self.Wants_To_Double_Jump = True
         return True
 
-    def tick_player(self, caller: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
-        pawn = caller.Pawn
-        if pawn is None:
+    def tick_player(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+        if this.Pawn is None:
             return True
-
-        is_grounded = pawn.IsOnGroundOrShortFall()
+        pawn = this.Pawn
+        try:
+            is_grounded = pawn.IsOnGroundOrShortFall()
+        except TypeError:
+            return True
         if self.Want_To_Slam:
             # Check to make sure you dont get suck slamming but not registering on the ground
             if pawn.Location.Z == self.Previous_Z:
@@ -177,7 +194,10 @@ class MovementTech(SDKMod):
                     player_location = (pawn.Location.X, pawn.Location.Y, pawn.Location.Z)
                     damage_multiplier = 3 + 0.5 * falldistance / self.Min_Slam_Height
                     artifact = pawn.EquippedItems[3]
-                    framename = artifact.GetElementalFrame()
+                    if artifact is not None:
+                        framename = artifact.GetElementalFrame()
+                    else:
+                        framename = "explosive"
 
                     emitter_pool.SpawnEmitter(self.get_particle(framename), player_location,)
                     pawn.PlayAkEvent(unrealsdk.FindObject("AkEvent", self.Impact_Sound))
@@ -186,7 +206,7 @@ class MovementTech(SDKMod):
                         self.Slam_Radius,
                         damage_multiplier * self.slam_damage(pawn.GetExpLevel()),
                         True,
-                        0,
+                        40000,
                         unrealsdk.FindClass("DmgType_Crushed"),
                         unrealsdk.FindObject("WillowDamageTypeDefinition", self.get_damage_type(framename)),
                         unrealsdk.FindObject("WillowExplosionImpactDefinition", self.get_explosion_impact(framename)),
@@ -197,7 +217,7 @@ class MovementTech(SDKMod):
             self.Wants_To_Double_Jump = False
             self.Double_Jumped = True
             _x, _y = pawn.Velocity.X, pawn.Velocity.Y
-            pawn.Velocity = (_x, _y, self.Jump_Velocity)
+            pawn.Velocity = (_x, _y, self.DoubleJumpVelocity.CurrentValue*self.Jump_Strength_Base)
             pawn.PlayAkEvent(unrealsdk.FindObject("AkEvent", self.Jump_Sound))
 
         if self.Double_Jumped:
