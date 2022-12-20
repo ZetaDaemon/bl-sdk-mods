@@ -17,8 +17,7 @@
       "types": ["Utility"],
       "latest": "1.1",
       "versions": {
-        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/FarmCounter/FarmCounter.zip",
-        "1.0": ""
+        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/FarmCounter/FarmCounter.zip"
       },
       "requirements": {
         "UserFeedback": ">=1.5"
@@ -54,6 +53,27 @@
       "requirements": {
         "Structs": ">=1.0",
         "Enums": ">=1.1"
+      }
+    },
+    {
+      "name": "Gear Randomiser",
+      "description": [
+        "Randomises all gear in the game.",
+        "Adds options to additionally choose which character class mods will be locked to as well as a chaos mode which removes restrictions for weapons as to which parts spawn where on a gun."
+        "Does not change how loot is obtained or enemy drops so it is highly suggested to also use a mod like Cold Dead Hands",
+        "Also works with mods that add new gear to the game, you will just need to update parts for the randomiser in the mod enable window after running the other mod."
+      ],
+      "tagline": [
+        "Randomises all gear in the game."
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/GearRandomiser/GearRandomiser.zip"
+      },
+      "requirements": {
+        "Structs": ">=1.0",
+        "Sanity Saver": ">=2.2"
       }
     }
   ]
