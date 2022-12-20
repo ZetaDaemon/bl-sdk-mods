@@ -239,8 +239,6 @@ class GearRandomiser(SDKMod):
                 COM.RequiredPlayerClass = char
     
     def RandomiseGunDef(self, DefinitionData):
-        if DefinitionData.WeaponTypeDefinition is None:
-            return
         if not self.ChaosMode.CurrentValue:
             WeaponType = EWeaponType[DefinitionData.WeaponTypeDefinition.WeaponType]
             DefinitionData.BodyPartDefinition = unrealsdk.FindObject("WeaponPartDefinition", choice(self.WeaponParts["BodyPartData"][WeaponType]))
@@ -263,6 +261,10 @@ class GearRandomiser(SDKMod):
         return tuple(WeaponDefinitionData(DefinitionData))
     
     def RandomiseGun(self, this):
+        if this.DefinitionData.WeaponTypeDefinition is None:
+            return
+        if "GD_Weap" not in this.PathName(this.DefinitionData.WeaponTypeDefinition):
+            return
         this.DefinitionData = self.RandomiseGunDef(this.DefinitionData)
 
         this.CalculatePartDependentWeaponBaseValues()
