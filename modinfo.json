@@ -58,7 +58,7 @@
     {
       "name": "Gear Randomiser",
       "description": [
-        "Randomises all gear in the game.",
+        "Randomises all gear in the game.\n",
         "Adds options to additionally choose which character class mods will be locked to as well as a chaos mode which removes restrictions for weapons as to which parts spawn where on a gun.\n",
         "Does not change how loot is obtained or enemy drops so it is highly suggested to also use a mod like Cold Dead Hands.\n",
         "Also works with mods that add new gear to the game, you will just need to update parts for the randomiser in the mod enable window after running the other mod.\n",
