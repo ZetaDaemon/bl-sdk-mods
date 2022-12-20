@@ -1,5 +1,5 @@
 import unrealsdk
-from Mods.ModMenu import ModTypes, RegisterMod, SDKMod, Game, Options, EnabledSaveType
+from Mods.ModMenu import ModTypes, RegisterMod, SDKMod, Game, Options, EnabledSaveType, Keybind
 from Mods.Structs import WeaponDefinitionData, AppliedAttributeEffect, ItemDefinitionData
 from random import choice
 from typing import Dict
@@ -38,6 +38,9 @@ class GearRandomiser(SDKMod):
         "Enter": "Enable",
         "R": "Update Parts",
     }
+    Keybinds: list = [
+        Keybind("Refresh Weapons", "Delete")
+    ]
 
     SavedComCharacters: Dict[str, str] = {}
 
@@ -80,6 +83,11 @@ class GearRandomiser(SDKMod):
     ClassModParts = []
     
     RelicParts = []
+
+    def GameInputPressed(self, input):
+        if input.Name == "Refresh Weapons":
+            self.ReRandomiseGuns()
+
 
     def SettingsInputPressed(self, action: str) -> None:
         if action == "Update Parts":
@@ -137,6 +145,14 @@ class GearRandomiser(SDKMod):
                 char = self.PlayerClasses[self.ComCharacter.CurrentValue]
                 for COM in unrealsdk.FindAll("ClassModDefinition"):
                     COM.RequiredPlayerClass = char
+    
+    def ReRandomiseGuns(self):
+        for weap in unrealsdk.FindAll("WillowWeapon"):
+            if weap.AdditionalQueryInterfaceSource and "Player" in str(weap.AdditionalQueryInterfaceSource.Class):
+                return True
+            if weap.DefinitionData is None:
+                return True
+            self.RandomiseGun(weap)
     
     def CacheParts(self):
         self.AllWeaponParts = []
@@ -263,8 +279,8 @@ class GearRandomiser(SDKMod):
     def RandomiseGun(self, this):
         if this.DefinitionData.WeaponTypeDefinition is None:
             return
-        if "GD_Weap" not in this.PathName(this.DefinitionData.WeaponTypeDefinition):
-            return
+        #if "GD_Weap" not in this.PathName(this.DefinitionData.WeaponTypeDefinition):
+            #return
         this.DefinitionData = self.RandomiseGunDef(this.DefinitionData)
 
         this.CalculatePartDependentWeaponBaseValues()
