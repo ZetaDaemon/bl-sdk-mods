@@ -30,7 +30,6 @@ class GearRandomiser(SDKMod):
     Author: str = "ZetaDaemon"
     Description: str = "Randomises all gear in the game.\nGives option to set class mod usability via settings.\n\nIf using with a mod that adds new items make sure to re-cache parts after the other mod is enabled."
     Version: str = "1.0"
-    SupportedGames = Game.BL2
     Types: ModTypes = ModTypes.Gameplay
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadOnMainMenu
 
