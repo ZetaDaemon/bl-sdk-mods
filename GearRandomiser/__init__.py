@@ -10,7 +10,8 @@ EWeaponType = [
     'WT_SMG',
     'WT_SniperRifle',
     'WT_AssaultRifle',
-    'WT_RocketLauncher'
+    'WT_RocketLauncher',
+    'WT_Laser'
 ]
 
 WeaponCustomPartTypeData = [
@@ -53,6 +54,7 @@ class GearRandomiser(SDKMod):
             "WT_SniperRifle": [],
             "WT_AssaultRifle": [],
             "WT_RocketLauncher": [],
+            "WT_Laser": [],
         },
         'GripPartData': [],
         'BarrelPartData': [],
@@ -68,6 +70,7 @@ class GearRandomiser(SDKMod):
             "WT_SniperRifle": [],
             "WT_AssaultRifle": [],
             "WT_RocketLauncher": [],
+            "WT_Laser": [],
         }
     }
 
@@ -164,6 +167,7 @@ class GearRandomiser(SDKMod):
                 "WT_SniperRifle": [],
                 "WT_AssaultRifle": [],
                 "WT_RocketLauncher": [],
+                "WT_Laser": [],
             },
             'GripPartData': [],
             'BarrelPartData': [],
@@ -179,6 +183,7 @@ class GearRandomiser(SDKMod):
                 "WT_SniperRifle": [],
                 "WT_AssaultRifle": [],
                 "WT_RocketLauncher": [],
+                "WT_Laser": [],
             }
         }
 
@@ -254,6 +259,10 @@ class GearRandomiser(SDKMod):
                 COM.RequiredPlayerClass = char
     
     def RandomiseGunDef(self, DefinitionData):
+        if DefinitionData.BalanceDefinition is None:
+            return tuple(WeaponDefinitionData(DefinitionData))
+        if DefinitionData.BalanceDefinition.RuntimePartListCollection is None:
+            return tuple(WeaponDefinitionData(DefinitionData))
         if not self.ChaosMode.CurrentValue:
             WeaponType = EWeaponType[DefinitionData.WeaponTypeDefinition.WeaponType]
             DefinitionData.BodyPartDefinition = unrealsdk.FindObject("WeaponPartDefinition", choice(self.WeaponParts["BodyPartData"][WeaponType]))
@@ -278,8 +287,6 @@ class GearRandomiser(SDKMod):
     def RandomiseGun(self, this):
         if this.DefinitionData.WeaponTypeDefinition is None:
             return
-        #if "GD_Weap" not in this.PathName(this.DefinitionData.WeaponTypeDefinition):
-            #return
         this.DefinitionData = self.RandomiseGunDef(this.DefinitionData)
 
         this.CalculatePartDependentWeaponBaseValues()
