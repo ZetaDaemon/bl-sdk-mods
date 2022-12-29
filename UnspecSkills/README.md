@@ -9,17 +9,17 @@ Other mods can add custom conditions for being able to unspec skills, to do this
 from Mods import UnspecSkills
 
 # Define custom condition
-def unspec_condition(PC: unrealsdk.UObject, Skill: unrealsdk.UObject) -> bool:
+def my_unspec_condition(PC: unrealsdk.UObject, Skill: unrealsdk.UObject) -> bool:
 	# If skill points are greater than 50 block unspeccing by returning false
 	if PC.PlayerReplicationInfo.GeneralSkillPoints > 50:
 		return False
 	return True
 
 # Add custom condition
-UnspecSkills.add_unspec_condition(unspec_condition)
+UnspecSkills.add_unspec_condition(my_unspec_condition)
 
 # Remove custom condition
-UnspecSkills.remove_unspec_condition(unspec_condition)
+UnspecSkills.remove_unspec_condition(my_unspec_condition)
 ```
 
 ### v1.0
