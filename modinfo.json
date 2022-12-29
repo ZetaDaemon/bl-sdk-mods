@@ -76,6 +76,24 @@
         "Structs": ">=1.0",
         "Sanity Saver": ">=2.2"
       }
+    },
+    {
+      "name": "Unspec Skills",
+      "description": [
+        "Allows you to right click on skills to remove points from them. Removing points does get restricted by having points further up in the tree meaning you cannot go unlock a later skill and then just remove points from early skills.\n\n",
+        "Modders can add custom conditions for removing points from skills, check the [README](https://github.com/ZetaDaemon/bl-sdk-mods/tree/main/UnspecSkills) for details on doing this"
+      ],
+      "tagline": [
+        "Allows Unspeccing skills by right clicking on them"
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/UnspecSkills/UnspecSkills.zip"
+      },
+      "requirements": {
+        "Enums": ">=1.0"
+      }
     }
   ]
 }
