@@ -6,9 +6,20 @@ You will need to download [Enums](https://bl-sdk.github.io/mods/Enums/) for this
 ## Custom Unspec Conditions
 Other mods can add custom conditions for being able to unspec skills, to do this you need a function that takes 2 `unrealsdk.UObject` arguments and then returns true or false. The 2 arguments are the `WillowPlayerController` trying to remove points and then the `SkillDefinition` that the player is trying to remove.
 ```py
+from Mods import UnspecSkills
+
+# Define custom condition
 def unspec_condition(PC: unrealsdk.UObject, Skill: unrealsdk.UObject) -> bool:
-	# Do Check
+	# If skill points are greater than 50 block unspeccing by returning false
+	if PC.PlayerReplicationInfo.GeneralSkillPoints > 50:
+		return False
 	return True
+
+# Add custom condition
+UnspecSkills.add_unspec_condition(unspec_condition)
+
+# Remove custom condition
+UnspecSkills.remove_unspec_condition(unspec_condition)
 ```
 
 ### v1.0
