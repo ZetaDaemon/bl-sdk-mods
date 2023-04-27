@@ -94,6 +94,22 @@
       "requirements": {
         "Enums": ">=1.0"
       }
+    },
+    {
+      "name": "Dialog Skipper",
+      "description": [
+        "Allows dialog to be skipped by pressing a keybind, defaults to Z.\n",
+        "Additionally, allows for the option to automatically skip all dialog so it never plays."
+      ],
+      "tagline": [
+        "Allows skipping dialog"
+      ],
+      "types": ["Utility"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/DialogSkipper/DialogSkipper.zip"
+      },
+      "requirements": {}
     }
   ]
 }
