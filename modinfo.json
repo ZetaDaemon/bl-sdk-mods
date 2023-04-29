@@ -87,9 +87,9 @@
         "Allows Unspeccing skills by right clicking on them"
       ],
       "types": ["Gameplay"],
-      "latest": "1.0",
+      "latest": "1.1",
       "versions": {
-        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/UnspecSkills/UnspecSkills.zip"
+        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/UnspecSkills/UnspecSkills.zip"
       },
       "requirements": {
         "Enums": ">=1.0"

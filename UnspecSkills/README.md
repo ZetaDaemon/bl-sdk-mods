@@ -22,5 +22,8 @@ UnspecSkills.add_unspec_condition(my_unspec_condition)
 UnspecSkills.remove_unspec_condition(my_unspec_condition)
 ```
 
+### v1.1
+Fixed a bug where unspeccing some skills will crash the game.
+
 ### v1.0
 Initial Release.

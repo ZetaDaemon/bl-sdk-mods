@@ -1,6 +1,6 @@
 import unrealsdk
 from Mods.ModMenu import ModTypes, RegisterMod, SDKMod, EnabledSaveType, Mods, Hook
-from Mods.Enums import EInputEvent
+from Mods.Enums import EInputEvent, ESkillEventType
 from typing import List, Callable
 
 # Allows other mods to set up conditions for being able to remove skills.
@@ -56,6 +56,12 @@ class UnspecSkills(SDKMod):
 				Tier.bUnlocked = True
 			for idx in Tier.SkillIndices:
 				points += PC.GetSkillGrade(Tree.Skills[idx].Definition)
+	
+	def deactivate_skill(self, PC: unrealsdk.UObject, skill: unrealsdk.UObject):
+		for running_skill in PC.GetSkillManager().ActiveSkills:
+			if not running_skill.Definition == skill or not running_skill.SkillInstigator == PC:
+				continue
+			running_skill.Deactivate()
 
 	@Hook("WillowGame.SkillTreeGFxObject.HandleInputKey")
 	def handle_input_key(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
@@ -75,6 +81,9 @@ class UnspecSkills(SDKMod):
 
 		PC = this.WPCOwner
 		skill = this.CurrentSkill
+		if skill == PC.PlayerSkillTree.Skills[0].Definition:
+			this.Movie.PlaySpecialUISound("ResultFailure")
+			return True
 		grade = PC.GetSkillGrade(skill)
 		if grade == 0:
 			this.Movie.PlaySpecialUISound("ResultFailure")
@@ -91,10 +100,6 @@ class UnspecSkills(SDKMod):
 		PC.GetSkillManager().UpdateSkillGrade(PC, skill, grade)
 		# Returns the number of points the skill costed (Normally 1 but mods can change this)
 		PC.PlayerReplicationInfo.GeneralSkillPoints += cost
-		# Need to deactivate the skill instance if the grade reaches 0
-		if grade == 0:
-			PC.GetSkillManager().DeactivateSkill(PC, skill)
-
 		# Lock skills if theyre no longer available
 		self.update_tree_progression(PC, PC.PlayerSkillTree)
 
@@ -108,6 +113,15 @@ class UnspecSkills(SDKMod):
 
 		# Plays the buy point sound for the grade you just removed
 		this.Movie.PlayUISound(f'BuyPoint{grade+1}')
+
+		# Need to deactivate the skill instance if the grade reaches 0
+		if grade == 0:
+			if skill.TrackedActiveSkill is not None:
+				self.deactivate_skill(PC, skill.TrackedActiveSkill)
+			for s in skill.TrackedActiveSkills:
+				self.deactivate_skill(PC, s)
+			self.deactivate_skill(PC, skill)
+
 		return True
 
 
