@@ -7,7 +7,7 @@ class DialogSkipper(SDKMod):
 	Description: str = (
 		"Allows for skipping dialog."
 	)
-	Version: str = "1.0"
+	Version: str = "1.1"
 	Types: ModTypes = ModTypes.Utility
 	SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
@@ -36,7 +36,19 @@ class DialogSkipper(SDKMod):
 				dialog.StopTalking()
 	
 	@Hook("GearboxFramework.GearboxDialogComponent.TriggerEvent")
-	def skip_dialog(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+	def trigger_event(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+		if self.always_skip.CurrentValue:
+			return False
+		return True
+	
+	@Hook("GearboxFramework.Behavior_TriggerDialogEvent.TriggerDialogEvent")
+	def trigger_dialog(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
+		if self.always_skip.CurrentValue:
+			return False
+		return True
+	
+	@Hook("WillowGame.WillowDialogAct_Talk.Activate")
+	def talk_activate(self, this: unrealsdk.UObject, function: unrealsdk.UFunction, params: unrealsdk.FStruct) -> bool:
 		if self.always_skip.CurrentValue:
 			return False
 		return True

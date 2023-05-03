@@ -20,7 +20,7 @@ class UnspecSkills(SDKMod):
 	Name: str = "Unspec Skills"
 	Author: str = "ZetaDaemon"
 	Description: str = "Allows you to unspec skills by right clicking on them, as long as your other specced skills allow it."
-	Version: str = "1.0"
+	Version: str = "1.1"
 	Types: ModTypes = ModTypes.Gameplay
 	SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
