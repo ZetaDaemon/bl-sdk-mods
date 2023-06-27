@@ -31,6 +31,7 @@
       "tagline": [
         "Allows for double jumps and slamming in BL2."
       ],
+      "supports": ["[Supported Games ie `[\"BL2\"]`]"],
       "types": ["Gameplay"],
       "latest": "1.2",
       "versions": {
@@ -48,6 +49,7 @@
       "tagline": [
         "Replaces BAR with a difficulty mode that can be changed in the options."
       ],
+      "supports": ["[Supported Games ie `[\"BL2\"]`]"],
       "types": ["Gameplay"],
       "latest": "1.0",
       "versions": {
