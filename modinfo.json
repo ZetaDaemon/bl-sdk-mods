@@ -26,15 +26,18 @@
     {
       "name": "Movement Tech",
       "description": [
-        "Allows for double jumps and slamming in BL2."
+        "Allows for double jumps and slamming in BL2.\nNow with multiplayer support!"
       ],
       "tagline": [
         "Allows for double jumps and slamming in BL2."
       ],
       "types": ["Gameplay"],
-      "latest": "1.1",
+      "latest": "1.2",
       "versions": {
-        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/MovementTech/MovementTech.zip"
+        "1.2": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/MovementTech/MovementTech.zip"
+      },
+      "requirements": {
+        "Enums": ">=1.0",
       }
     },
     {
