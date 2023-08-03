@@ -115,6 +115,25 @@
         "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/DialogSkipper/DialogSkipper.zip"
       },
       "requirements": {}
+    },
+    {
+      "name": "Reward Reroller",
+      "description": [
+        "Lets you reroll mission rewards at the cost of eridium. In multiplayer all players will be promted with the mission reward screen to reroll their own items.\n\n",
+        "Thankyou to Flare2V and alienoliver for the original work in BL2Fix."
+      ],
+      "tagline": [
+        "Allows rerolling of mission rewards."
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/RewardReroller/RewardReroller.zip"
+      },
+      "requirements": {
+        "Enums": ">=1.0",
+        "Structs": ">=1.1"
+      }
     }
   ]
 }
