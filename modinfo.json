@@ -126,9 +126,9 @@
         "Allows rerolling of mission rewards."
       ],
       "types": ["Gameplay"],
-      "latest": "1.0",
+      "latest": "1.1",
       "versions": {
-        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/RewardReroller/RewardReroller.zip"
+        "1.1": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/RewardReroller/RewardReroller.zip"
       },
       "requirements": {
         "Enums": ">=1.0",

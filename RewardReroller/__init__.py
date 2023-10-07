@@ -73,7 +73,7 @@ class RewardReroller(SDKMod):
         "In multiplayer all players will be promted with the mission reward screen to reroll their own items.\n\n"
         "Thankyou to Flare2V and alienoliver for the original work in BL2Fix."
     )
-    Version: str = "1.0"
+    Version: str = "1.1"
     Types: ModTypes = ModTypes.Utility
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadWithSettings
 
@@ -138,31 +138,60 @@ class RewardReroller(SDKMod):
         item.InitializeInventory(balance, manufacturer, level, None)
         return item
 
-    def get_balance_from_pool(self, pool: unrealsdk.UObject):
+    def validate_pool(self, pool: unrealsdk.UObject, level: int, context: unrealsdk.UObject):
+        if pool is None:
+            return False
+        if pool.MinGameStageRequirement is not None:
+            min_level, _ = pool.MinGameStageRequirement.GetValue(context)
+            if level < min_level:
+                return False
+        if pool.MaxGameStageRequirement is not None:
+            max_level, _ = pool.MaxGameStageRequirement.GetValue(context)
+            if level > max_level:
+                return False
+        return True
+
+    def get_balance_from_pool(
+        self, pool: unrealsdk.UObject, level: int, mission: unrealsdk.UObject
+    ):
         obj = pool
         pool_cls = unrealsdk.FindClass("ItemPoolDefinition")
         while is_class(obj, pool_cls):
+            items = []
+            weights = []
+            for item in obj.BalancedItems:
+                if item.ItmPoolDefinition and self.validate_pool(
+                    item.ItmPoolDefinition, level, mission
+                ):
+                    items.append(item.ItmPoolDefinition)
+                elif item.InvBalanceDefinition:
+                    items.append(item.InvBalanceDefinition)
+                else:
+                    continue
+                weights.append(self.eval_aid(item.Probability))
+
             obj = choices(
-                [
-                    item.ItmPoolDefinition
-                    if item.InvBalanceDefinition is None
-                    else item.InvBalanceDefinition
-                    for item in obj.BalancedItems
-                ],
-                [self.eval_aid(item.Probability) for item in obj.BalancedItems],
+                items,
+                weights,
             )[0]
         return obj
 
     def get_reward_data(self, mission: unrealsdk.UObject, alt: bool) -> tuple:
         mission_reward = mission.AlternativeReward if alt else mission.Reward
-        items = []
-        items.extend(mission_reward.RewardItems)
-        items.extend(mission_reward.RewardItemPools)
+        items = [item for item in mission_reward.RewardItems if item is not None]
+        gamestage = mission.GetGameStage()
+        for pool in mission_reward.RewardItemPools:
+            if self.validate_pool(pool, gamestage, mission):
+                items.append(pool)
+
+        gamestage = mission.GetGameStage()
+
         if len(items) > 2:
             items = items[0:2]
         for idx, item in enumerate(items):
             items[idx] = self.create_from_balance(
-                self.get_balance_from_pool(item), mission.GetGameStage()
+                self.get_balance_from_pool(item, gamestage, mission),
+                gamestage,
             )
         weapon_rewards = []
         item_rewards = []
