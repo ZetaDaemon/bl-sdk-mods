@@ -437,7 +437,6 @@ class BetterDamageFeedback(SDKMod):
     Author: str = "ZetaDaemon"
     Description: str = "Enhances damage numbers and feedback from damaging enemies."
     Version: str = f"v{VERSION_MAJOR}.{VERSION_MINOR}"
-    SupportedGames = Game.BL2
     Types: ModTypes = ModTypes.Gameplay
     SaveEnabledState: EnabledSaveType = EnabledSaveType.LoadOnMainMenu
     Options: List[OptionManager.Options.Base] = [
