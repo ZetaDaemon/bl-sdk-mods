@@ -134,6 +134,25 @@
         "Enums": ">=1.0",
         "Structs": ">=1.1"
       }
+    },
+    {
+      "name": "Better Damage Feedback",
+      "description": [
+        "Allows for the customisation of damage particles changing the colour, colour on crit, toggle CRITICAL effect, increased size on crit or turn damage numbers off entirely. Additionally allows for hit sounds and critical hit sounds.\n\n",
+        "Adds support for other mods to give the information for damage particles, check the [README](https://github.com/ZetaDaemon/bl-sdk-mods/tree/main/BetterDamageFeedback) for details on doing this."
+      ],
+      "tagline": [
+        "Allows for the customisation of damage particles."
+      ],
+      "types": ["Gameplay"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/BetterDamageFeedback/BetterDamageFeedback.zip"
+      },
+      "requirements": {
+        "Enums": ">=1.0",
+        "Structs": ">=1.1"
+      }
     }
   ]
 }
