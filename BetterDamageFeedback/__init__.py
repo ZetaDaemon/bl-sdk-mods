@@ -233,14 +233,15 @@ damage_type_colour_dict: Dict[
 ] = {}
 
 default_damage_colours: Dict[
-    str, Dict[str, Union[Tuple[int, int, int], OptionManager.Options.Nested]]
+    str,
+    Dict[str, Union[Tuple[int, int, int], Union[OptionManager.Options.Nested, None]]],
 ] = {
-    "Normal": {"Body": (70, 70, 70), "Crit": (100, 35, 35)},
-    "Explosive": {"Body": (50, 50, 0), "Crit": (100, 100, 0)},
-    "Fire": {"Body": (80, 20, 0), "Crit": (100, 50, 0)},
-    "Shock": {"Body": (0, 15, 80), "Crit": (0, 40, 100)},
-    "Corrosive": {"Body": (0, 70, 0), "Crit": (40, 100, 0)},
-    "Slag": {"Body": (15, 0, 80), "Crit": (40, 0, 100)},
+    "Normal": {"Body": (70, 70, 70), "Crit": (100, 35, 35), "Option": None},
+    "Explosive": {"Body": (50, 50, 0), "Crit": (100, 100, 0), "Option": None},
+    "Fire": {"Body": (80, 20, 0), "Crit": (100, 50, 0), "Option": None},
+    "Shock": {"Body": (0, 15, 80), "Crit": (0, 40, 100), "Option": None},
+    "Corrosive": {"Body": (0, 70, 0), "Crit": (40, 100, 0), "Option": None},
+    "Slag": {"Body": (15, 0, 80), "Crit": (40, 0, 100), "Option": None},
 }
 settings_path = f"{dir_path}/settings.json"
 if path.isfile(settings_path):
@@ -252,6 +253,7 @@ if path.isfile(settings_path):
             default_damage_colours[element] = {
                 "Body": (data["Red"], data["Green"], data["Blue"]),
                 "Crit": (data["Crit Red"], data["Crit Green"], data["Crit Blue"]),
+                "Option": None,
             }
 colour_name_damage_types: Dict[str, List[str]] = {
     "Normal": ["GD_Impact.DamageType.DmgType_Normal"],
@@ -429,7 +431,7 @@ def display_damage_event(event: RecentDamage, PC: unrealsdk.UObject):
 
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 0
+VERSION_MINOR = 1
 
 
 class BetterDamageFeedback(SDKMod):
@@ -626,7 +628,10 @@ class BetterDamageFeedback(SDKMod):
             if element not in default_damage_colours:
                 unrealsdk.Log(f"element {element} is not a registered element")
                 return
-            if damage_type_colour_dict == {}:
+            if (
+                damage_type_colour_dict == {}
+                or default_damage_colours[element]["Option"] is None
+            ):
                 if element in colour_name_damage_types:
                     colour_name_damage_types[element].append(args.type)
                 else:

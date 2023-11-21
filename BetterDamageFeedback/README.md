@@ -3,5 +3,8 @@ Allows for the customisation of damage particles changing the colour, colour on 
 
 Adds support for other mods to give the information for damage particles by setting `use_custom_data_input` to True and then calling `display_damage_event(event: RecentDamage, PC: unrealsdk.UObject)` to display a particle with the given data.
 
+### v1.1
+Fixed some minor bugs.
+
 ### v1.0
 Initial Release.
