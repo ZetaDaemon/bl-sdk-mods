@@ -153,6 +153,20 @@
         "Enums": ">=1.0",
         "Structs": ">=1.1"
       }
+    },
+    {
+      "name": "Console Font Size",
+      "description": [
+        "Gives a slider in the mod settings to adjust the console font size."
+      ],
+      "tagline": [
+        "Console Font Size Slider"
+      ],
+      "types": ["Utility"],
+      "latest": "1.0",
+      "versions": {
+        "1.0": "https://github.com/ZetaDaemon/bl-sdk-mods/raw/main/ConsoleFontSize/ConsoleFontSize.zip"
+      }
     }
   ]
 }
