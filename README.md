@@ -7,4 +7,4 @@ With the release of the updated sdk, all new and updated mods will be made for i
 
 &nbsp;
 
-A repo holding all my Borderlands 2/TPS [PythonSDK](https://github.com/bl-sdk/PythonSDK) mods.
+A repo holding all my Borderlands 2/TPS [PythonSDK](https://bl-sdk.github.io/) mods.
